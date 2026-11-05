@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id           String  @id
+  name         String
+  wasteCode    String
+  outcome      String
+  howToCollect String
+  whereToTake  String
+  isNational   Boolean
+  sourceUrl    String
+  items        Item[]
+}
+
+model Item {
+  id            Int      @id
+  name          String
+  synonyms      String[]
+  condition     String?
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  whereToTake   String
+  relation      String // 'fits' | 'does_not_fit'
+  sourcePageId  String
+  isGeneralTerm Boolean
+  sourceUrl     String
+
+  @@index([categoryId])
+  @@index([sourcePageId])
+}
+
+model SearchLog {
+  id          Int      @id @default(autoincrement())
+  query       String
+  resultCount Int
+  createdAt   DateTime @default(now())
+}
