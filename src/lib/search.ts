@@ -70,8 +70,8 @@ async function queryItems(q: string, minSimilarity: number, limit: number): Prom
               WHEN c.n = query.q THEN 100
               WHEN left(c.n, length(query.q)) = query.q THEN 80
               WHEN position(query.q in c.n) > 0 THEN 60
-              WHEN GREATEST(similarity(c.n, query.q), word_similarity(query.q, c.n)) >= ${minSimilarity}
-                THEN 20 + 30 * GREATEST(similarity(c.n, query.q), word_similarity(query.q, c.n))
+              WHEN length(query.q) >= 4 AND similarity(c.n, query.q) >= ${minSimilarity}
+                THEN 20 + 30 * similarity(c.n, query.q)
               ELSE 0
             END) - (CASE WHEN c.is_synonym THEN 5 ELSE 0 END)
           )
@@ -134,14 +134,24 @@ function group(rows: Row[], names: Map<string, string>, maxGroups: number): Resu
   return [...groups.values()];
 }
 
+/** Rows are sorted by score. Keep only real matches when there are any, else the best typo matches. */
+function prune(rows: Row[]): Row[] {
+  if (rows.length === 0) return rows;
+  const top = rows[0].score;
+  // Real matches (exact / starts with / contains, score >= 45 even for general terms)
+  // hide fuzzy ones; for typo-only results keep those close to the best one.
+  const cutoff = top >= 45 ? 45 : top - 8;
+  return rows.filter((r) => r.score >= cutoff);
+}
+
 export async function searchItems(q: string, maxGroups = MAX_GROUPS): Promise<ResultGroup[]> {
-  const [rows, names] = await Promise.all([queryItems(q, 0.3, 80), categoryNames()]);
-  return group(rows, names, maxGroups);
+  const [rows, names] = await Promise.all([queryItems(q, 0.4, 80), categoryNames()]);
+  return group(prune(rows), names, maxGroups);
 }
 
 /** Looser fuzzy match used for "did you mean" suggestions when nothing was found. */
 export async function similarNames(q: string, limit = 5): Promise<string[]> {
-  const rows = await queryItems(q, 0.15, 60);
+  const rows = await queryItems(q, 0.25, 60);
   const seen = new Set<string>();
   const out: string[] = [];
   for (const r of rows) {

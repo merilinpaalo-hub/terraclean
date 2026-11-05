@@ -42,10 +42,12 @@ function MatchBlock({ match }: { match: ItemMatch }) {
           <dt className="text-sm font-medium text-slate-700">Kuhu viia</dt>
           <dd className="font-medium">{match.whereToTake}</dd>
         </div>
-        <div>
-          <dt className="text-sm font-medium text-slate-700">Kuidas koguda</dt>
-          <dd className="text-slate-800">{match.category.howToCollect}</dd>
-        </div>
+        {match.category.howToCollect.trim() && (
+          <div>
+            <dt className="text-sm font-medium text-slate-700">Kuidas koguda</dt>
+            <dd className="text-slate-800">{match.category.howToCollect}</dd>
+          </div>
+        )}
       </dl>
 
       <a

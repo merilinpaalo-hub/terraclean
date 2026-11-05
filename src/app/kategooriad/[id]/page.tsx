@@ -58,7 +58,7 @@ export default async function CategoryPage({ params }: Props) {
             </div>
           </div>
           <dl className="space-y-4 text-base">
-            {facts.map((f) => (
+            {facts.filter((f) => f.value.trim()).map((f) => (
               <div key={f.label}>
                 <dt className="text-sm font-medium text-slate-700">{f.label}</dt>
                 <dd className="text-slate-900">{f.value}</dd>

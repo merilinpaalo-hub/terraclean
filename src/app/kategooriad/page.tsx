@@ -40,7 +40,9 @@ export default async function CategoriesPage() {
                 <CategoryIcon id={c.id} />
                 <span className="flex-1 space-y-1">
                   <span className="block text-lg font-semibold leading-snug">{c.name}</span>
-                  <span className="block text-sm text-slate-700">Jäätmekood: {c.wasteCode}</span>
+                  {c.wasteCode.trim() && (
+                    <span className="block text-sm text-slate-700">Jäätmekood: {c.wasteCode}</span>
+                  )}
                   {!c.isNational && <Badge className="mt-1">lisakategooria</Badge>}
                 </span>
               </Link>
